@@ -49,6 +49,7 @@ const handleRegister = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+//hello
 
 const handleVerifyEmail = async (req, res) => {
   const { token } = req.params;
