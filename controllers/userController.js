@@ -119,7 +119,7 @@ const handleLogin = async (req, res) => {
 
     //generate a token (validity, period)
     const token = jwt.sign(
-      { email: user.email, role: user.role },
+      { email: user.email, role: user.role, userId: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "3 days" }
     );
@@ -133,6 +133,7 @@ const handleLogin = async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
         role: user.role,
+        phoneNumber: user.phoneNumber,
       },
     });
   } catch (error) {
@@ -164,7 +165,7 @@ const resendVerificationEmail = async (req, res) => {
     user.verificationTokenExpires = tokenExpires;
     await user.save();
     //Send an email
-    const clientUrl =   `${process.env.FRONTEND_URL}/verify-email/${newToken}`
+    const clientUrl = `${process.env.FRONTEND_URL}/verify-email/${newToken}`;
     await sendWelcomeEmail({
       email: user.email,
       fullName: user.fullName,
@@ -248,6 +249,14 @@ const handleResetPassword = async (req, res) => {
   }
 };
 
+const handleGetUser = async (req, res) => {
+  res.send("get user");
+};
+
+const handleUpdateUser = async (req, res) => {
+  res.send("change user");
+};
+
 module.exports = {
   handleRegister,
   handleVerifyEmail,
@@ -255,4 +264,6 @@ module.exports = {
   resendVerificationEmail,
   handleForgotPassword,
   handleResetPassword,
+  handleUpdateUser,
+  handleGetUser,
 };
