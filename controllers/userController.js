@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../helpers/generateToken");
 const { sendWelcomeEmail, sendResetEmail } = require("../email/sendEmail");
 const jwt = require("jsonwebtoken");
+const cloudinary = require("cloudinary").v2;
 const handleRegister = async (req, res) => {
   const { fullName, email, password, phoneNumber, role } = req.body;
   try {
@@ -254,8 +255,9 @@ const handleGetUser = async (req, res) => {
   try {
     const user = await USER.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "user not found" });
     }
+
     res.status(200).json({ success: true, user });
   } catch (error) {
     console.error(error);
@@ -269,19 +271,35 @@ const handleUpdateUser = async (req, res) => {
   if (!fullName || !phoneNumber) {
     return res
       .status(400)
-      .json({ message: "Full name and phone number are required" });
+      .json({ message: "Provide fullName and Phone Number" });
   }
+
   try {
     const user = await USER.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "user not found" });
     }
+
+    //upload image with cloudinary
+    if (req.files && req.files.profilePicture) {
+      const profilePicture = req.files.profilePicture;
+      const result = await cloudinary.uploader.upload(
+        profilePicture.tempFilePath,
+        {
+          folder: "toriigate/profilePictures",
+          use_filename: true,
+          unique_filename: false,
+        }
+      );
+      user.profilePicture = result.secure_url;
+    }
+
     user.fullName = fullName;
     user.phoneNumber = phoneNumber;
     await user.save();
     res
       .status(200)
-      .json({ sucess: true, message: "User updated successfully", user });
+      .json({ success: true, message: "User Updated Successfully", user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: error.message });
